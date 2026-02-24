@@ -2,17 +2,23 @@ const html = document.querySelector('html')
 const focoBt = document.querySelector('.app__card-button--foco')
 const curtoBt = document.querySelector('.app__card-button--curto')
 const longoBt = document.querySelector('.app__card-button--longo')
-const botaoIniciar = document.querySelector('.app__card-primary-button')
+const startPauseBt = document.querySelector('#start-pause')
 const banner = document.querySelector('.app__image')
-const displayTempo = document.querySelector('#timer')
+const iniciarOuPausarBtIcone = document.querySelector('.app__card-primary-butto-icon')
 const titulo = document.querySelector('.app__title')
 const botoes = document.querySelectorAll('.app__card-button')
 const musicaFocoInput = document.querySelector('#alternar-musica')
+const iniciarOuPausarBt = document.querySelector('#start-pause span')
+const displayTempo = document.querySelector('#timer')
+
 const musica = new Audio('/sons/luna-rise-part-one.mp3')
+const audioTempoFinalizado = new Audio('/sons/beep.mp3')
+const audioTempoPausado = new Audio('/sons/pause.mp3')
+const audioTempoIniciado = new Audio('/sons/play.wav')
 musica.loop = true
-const duracaoFoco = 1500; 
-const duracaoDescansoCurto = 300; 
-const duracaoDescansoLongo = 900; 
+
+let temporizador = 1500 
+let intervaloId = null
 
 musicaFocoInput.addEventListener('change', () => {
     if(musica.paused) {
@@ -23,21 +29,25 @@ musicaFocoInput.addEventListener('change', () => {
 })
 
 focoBt.addEventListener('click', () => {
+    temporizador = 1500
     alterarContexto('foco')
     focoBt.classList.add('active')
 })
 
 curtoBt.addEventListener('click', () => {
+    temporizador = 300
     alterarContexto('descanso-curto')
     curtoBt.classList.add('active')
 })
 
 longoBt.addEventListener('click', () => {
+    temporizador = 900
     alterarContexto('descanso-longo')
     longoBt.classList.add('active')
 })
 
 function alterarContexto(contexto) {
+    mostrarTempo()
     botoes.forEach(function (contexto){
         contexto.classList.remove('active')
     })
@@ -64,3 +74,43 @@ function alterarContexto(contexto) {
             break;
     }
 }
+
+const contagemRegressiva = () => {
+    if(temporizador <= 0) {
+        audioTempoFinalizado.play()
+        zerar()
+        alert('Tempo Finalizado!')
+        return
+    }
+    temporizador -= 1
+    mostrarTempo()
+}
+
+startPauseBt.addEventListener('click', iniciarOuPausar)
+
+function iniciarOuPausar() {
+    if(intervaloId){
+        audioTempoPausado.play()
+        zerar()
+        return
+    }
+    audioTempoIniciado.play()
+    intervaloId = setInterval(contagemRegressiva, 1000)
+    iniciarOuPausarBt.textContent = 'Pausar'
+    iniciarOuPausarBtIcone.setAttribute('src', `/imagens/pause.png`)
+}
+
+function zerar() {
+    clearInterval(intervaloId)
+    iniciarOuPausarBt.textContent = 'Começar'
+    iniciarOuPausarBtIcone.setAttribute('src', `/imagens/play_arrow.png`)
+    intervaloId = null
+}
+
+function mostrarTempo(){
+    const tempo = new Date(temporizador * 1000)
+    const tempoFormatado = tempo.toLocaleTimeString('pt-BR', {minute: '2-digit', second: '2-digit'})
+    displayTempo.innerHTML = `${tempoFormatado}`
+}
+
+mostrarTempo()
