@@ -1,8 +1,13 @@
 const botaoAdicionarTarefa = document.querySelector('.app__button--add-task')
-const formAdicionarTarefa = document.querySelector('.app__form-add-task hidden')
+const formAdicionarTarefa = document.querySelector('.app__form-add-task')
 const textarea = document.querySelector('.app__form-textarea')
+const ulTarefas = document.querySelector('.app__section-task-list')
 
 const tarefas = JSON.parse(localStorage.getItem('tarefas')) || []
+
+function atualizarTarefas() {
+    localStorage.setItem('tarefas', JSON.stringify(tarefas))
+}
 
 function criarElementoTarefa(tarefa) {
     const li = document.createElement('li')
@@ -18,13 +23,24 @@ function criarElementoTarefa(tarefa) {
 
     const paragrafo = document.createElement('p')
     paragrafo.textContent = tarefa.descricao
+    paragrafo.classList.add('app__section-task-list-item-description')
 
     const botao = document.createElement('button')
+    botao.classList.add('app__button-edit')
+
+    botao.onclick = () => {
+        const novaDescricao = prompt('Editar tarefa', tarefa.descricao)
+        paragrafo.textContent = novaDescricao
+        tarefa.descricao = novaDescricao
+        atualizarTarefas()
+    }
+
     const imgBotao = document.createElement('img')
     imgBotao.setAttribute('src', '/imagens/edit.png')
     botao.append(imgBotao)
 
     li.append(svg, paragrafo, botao)
+    return li
 }
 
 botaoAdicionarTarefa.addEventListener('click', () => {
@@ -37,5 +53,15 @@ formAdicionarTarefa.addEventListener('submit', (evento) => {
         descricao: textarea.value
     }
     tarefas.push(tarefa)
-    localStorage.setItem('tarefas', JSON.stringify(tarefas))
+    const elementoTarefa = criarElementoTarefa(tarefa)
+    ulTarefas.append(elementoTarefa)
+    atualizarTarefas()
+    textarea.value = ''
+    formAdicionarTarefa.classList.add('hidden')
+})
+
+tarefas.forEach(tarefa => {
+    const elementoTarefa = criarElementoTarefa(tarefa)
+    ulTarefas.append(elementoTarefa)
+
 })
